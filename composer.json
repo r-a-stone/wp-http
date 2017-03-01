@@ -1,0 +1,20 @@
+{
+    "name": "rastone/wp-http",
+    "description": "RESTful routing in WordPress",
+    "type": "library",
+    "require": {
+        "symfony/http-foundation": "^3.2"
+    },
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "R.A.Stone",
+            "email": "rastone@webcode.io"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Webcode\\WP\\Http\\": "src/"
+        }
+    }
+}
