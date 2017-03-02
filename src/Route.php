@@ -25,6 +25,9 @@ class Route
             return $this->_name;
         }
         $this->_name = $name;
+        $collection = RouteCollection::get_instance();
+        $collection->regenerate_name_list();
+        return $this;
     }
 
     public function method($method = NULL)
@@ -33,6 +36,7 @@ class Route
             return $this->_method;
         }
         $this->_method = $method;
+        return $this;
     }
 
     public function path($path = NULL)
@@ -41,6 +45,7 @@ class Route
             return $this->_path;
         }
         $this->_path = $path;
+        return $this;
     }
 
     public function action($action = NULL)
@@ -48,7 +53,8 @@ class Route
         if (is_null($action)) {
             return $this->_action;
         }
-        $this->_action = $action;
+        $this->_action = &$action;
+        return $this;
     }
 
     public function middleware(array $middleware = NULL)
@@ -57,6 +63,7 @@ class Route
             return $this->_middleware;
         }
         $this->_middleware = array_merge($this->_middleware, $middleware);
+        return $this;
     }
 
     public function call_action(Request $request, Response $response)

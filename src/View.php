@@ -1,9 +1,9 @@
 <?php
-namespace Webcode\Http;
+namespace Webcode\WP\Http;
 
 class View
 {
-
+    public $data = [];
     private $_locations = [];
 
     public function __construct()
@@ -28,14 +28,11 @@ class View
     public static function make($template, array $data = [])
     {
         $view = self::get_instance();
-        foreach ($data as $var => $val) {
-            $var = 'data_' . $var;
-            $$var = $val;
-            global $$var;
-        }
+        $view->data = $data;
         $path = $view->find_template($template);
+
         if ($path) {
-            add_filter('template_include', function ($template) use ($path) {
+            add_filter('template_include', function ($template) use ($path, $data) {
                 $template = $path;
 
                 return $template;
@@ -43,15 +40,23 @@ class View
         }
     }
 
+    public static function data($key)
+    {
+        $view = View::get_instance();
+
+        return $view->data[$key];
+    }
+
     public function find_template($path)
     {
         $path = str_replace('.', DIRECTORY_SEPARATOR, $path);
         foreach ($this->_locations as $location) {
-            if (file_exists($location . $path . '.php')) {
-                return $location . $path . '.php';
+            if (file_exists($location . DIRECTORY_SEPARATOR . $path . '.php')) {
+                return $location . DIRECTORY_SEPARATOR . $path . '.php';
             }
         }
 
         return false;
     }
+
 }

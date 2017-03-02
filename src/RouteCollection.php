@@ -26,8 +26,30 @@ class RouteCollection
     public function add_route(Route $route)
     {
         $this->_routes[] = &$route;
-        $this->_name_list[$route->method() . '.' . $route->name()] = &$route;
+        $this->regenerate_name_list();
+
         return $route;
+    }
+
+    public function regenerate_name_list()
+    {
+        $this->_name_list = [];
+        foreach ($this->_routes as $_route) {
+            if (!empty($_route->name())) {
+                $this->_name_list[$_route->method() . '.' . $_route->name()] = $_route;
+            }
+        }
+    }
+
+    public function get_by_name($name)
+    {
+        foreach ($this->_name_list as $_name => $_route) {
+            if ($_name === $name) {
+                return $_route;
+            }
+        }
+
+        return false;
     }
 
     public function match(Request $request, Response $response, $method, $path)

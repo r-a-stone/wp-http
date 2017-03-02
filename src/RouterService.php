@@ -31,10 +31,9 @@ class RouterService
     {
         $collection = RouteCollection::get_instance();
         $route = new Route();
-        $route->method($method);
-        $route->path($path);
-        $route->action($action);
-
+        $route->method($method)
+            ->path(trim($path, '/'))
+            ->action($action);
         $collection->add_route($route);
 
         return $route;
@@ -47,7 +46,6 @@ class RouterService
         $request = Request::createFromGlobals();
         $response = new Response();
         $response->prepare($request);
-
         $collection = RouteCollection::get_instance();
         $collection->match($request, $response, $method, $path);
 
@@ -70,11 +68,13 @@ class RouterService
     {
         if (property_exists(RouterService::class, $method)) {
             if (is_callable(RouterService::$method)) {
-                return call_user_func_array(RouterService::class::$method, $args);
+                return call_user_func_array(RouterService::$method, $args);
             }
         } else {
             if (in_array(strtoupper($method), RouterService::$http_methods)) {
-                return RouterService::create_route($method, $args[0], $args[1]);
+                RouterService::get_instance();
+
+                return RouterService::create_route(strtoupper($method), $args[0], $args[1]);
             }
         }
     }
