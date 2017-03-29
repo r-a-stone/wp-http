@@ -1,7 +1,7 @@
 # WordPress Http
 Easy RESTful routing in WordPress inspired by Laravel.
 
-##Features##
+## Features
 * Middleware
 * Named Routes
 * Route Parameters
