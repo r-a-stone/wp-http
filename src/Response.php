@@ -10,8 +10,10 @@ class Response extends SymfonyResponse
 
     public function view($template, array $data = [])
     {
-        if(!$this->_title_called) {
-            $this->page_title([get_bloginfo('name')]);
+        if (function_exists('get_bloginfo')) {
+            if (!$this->_title_called) {
+                $this->page_title([get_bloginfo('name')]);
+            }
         }
         View::make($template, $data);
     }
@@ -20,13 +22,17 @@ class Response extends SymfonyResponse
     {
         $this->_title_called = true;
         $page_title = implode(' ' . $separator . ' ', $title_parts);
-        add_filter('pre_get_document_title', function ($title) use ($page_title) {
-            return $page_title;
-        }, 10);
+        if (function_exists('add_filter')) {
+            add_filter('pre_get_document_title', function ($title) use ($page_title) {
+                return $page_title;
+            }, 10);
+        }
         //Supports Yoast SEO
-        add_filter('wpseo_title', function ($title) use ($page_title) {
-            return $page_title;
-        }, 15);
+        if (function_exists('add_filter')) {
+            add_filter('wpseo_title', function ($title) use ($page_title) {
+                return $page_title;
+            }, 15);
+        }
     }
 
     public function send()

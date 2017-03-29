@@ -1,120 +1,104 @@
 <?php
-
 namespace Webcode\WP\Http;
 
 class Route
 {
-    private $_name;
-    private $_method;
-    private $_path;
-    private $_middleware;
-    private $_action;
+    public $name;
+    public $method;
+    public $path;
+    public $middleware_stack;
+    public $namespace;
+    public $closure;
+    public $params;
 
-    public function __construct()
+    private $_request;
+    private $_response;
+
+
+    public static $http_methods = [
+        'HEAD',
+        'GET',
+        'PUT',
+        'PATCH',
+        'POST',
+        'DELETE'
+    ];
+
+    public function __construct($method, $path, $closure)
     {
-        $this->_name = '';
-        $this->_method = '';
-        $this->_path = '';
-        $this->_action = '';
-        $this->_middleware = [];
+        $this->method = $method;
+        $this->name = NULL;
+        $this->path = '/' . implode('/', $path);
+        $this->middleware_stack = [];
+        $this->namespace = '\\';
+        $this->closure = $closure;
+        $this->params = [];
     }
 
-    public function name($name = NULL)
+    public function middleware(array $middleware)
     {
-        if (is_null($name)) {
-            return $this->_name;
-        }
-        $this->_name = $name;
-        $collection = RouteCollection::get_instance();
-        $collection->regenerate_name_list();
+        $this->middleware_stack = array_merge($this->middleware_stack, $middleware);
+
         return $this;
     }
 
-    public function method($method = NULL)
+    public function set_namespace($namespace)
     {
-        if (is_null($method)) {
-            return $this->_method;
-        }
-        $this->_method = $method;
+        $this->namespace = $namespace;
+
         return $this;
     }
 
-    public function path($path = NULL)
+    public function name($name)
     {
-        if (is_null($path)) {
-            return $this->_path;
-        }
-        $this->_path = $path;
+        $this->name .= $name;
+
         return $this;
     }
 
-    public function action($action = NULL)
+    public function run()
     {
-        if (is_null($action)) {
-            return $this->_action;
-        }
-        $this->_action = &$action;
-        return $this;
-    }
-
-    public function middleware(array $middleware = NULL)
-    {
-        if (is_null($middleware)) {
-            return $this->_middleware;
-        }
-        $this->_middleware = array_merge($this->_middleware, $middleware);
-        return $this;
-    }
-
-    public function call_action(Request $request, Response $response)
-    {
-        $this->_init_middleware();
-        $this->_call_middleware_before($request, $response);
-        if (is_callable($this->_action)) {
-            $action = $this->_action;
-            $action($request, $response);
+        $this->_request = Request::createFromGlobals();
+        $this->_response = new Response();
+        $this->_response->prepare($this->_request);
+        $this->_set_url_params();
+        $this->_run_middleware();
+        if (is_callable($this->closure)) {
+            return $this->_call_closure();
         } else {
-            $controller = NULL;
-            $action = NULL;
-            if (is_array($this->_action)) {
-                $controller = $this->_action[0];
-                $action = $this->_action[1];
-            } else if (strpos($this->_action, '@') !== false) {
-                $this->_action = explode('@', $this->_action);
-                $controller = $this->_action[0];
-                $action = $this->_action[1];
-            }
-            $controller_instance = new $controller();
-            $controller_instance->$action($request, $response);
+            return $this->_call_controller_method();
         }
-        $this->_call_middleware_after($request, $response);
     }
 
-    private function _init_middleware()
+    private function _set_url_params()
     {
-        foreach ($this->_middleware as $middleware) {
-            if (is_callable($middleware)) {
-                $this->_middleware[$middleware] = new $middleware();
-            }
+        foreach ($this->params as $var => $val) {
+            $this->_request->query->set($var, $val);
         }
     }
 
-    private function _call_middleware_before(Request $request, Response $response)
+    private function _run_middleware()
     {
-        foreach ($this->_middleware as $middleware) {
-            if (is_callable($middleware->before)) {
-                $middleware->before($request, $response);
-            }
+        foreach ($this->middleware_stack as $middleware) {
+            $middleware($this->_request, $this->_response);
         }
     }
 
-    private function _call_middleware_after(Request $request, Response $response)
+    private function _call_closure()
     {
-        foreach ($this->_middleware as $middleware) {
-            if (is_callable($middleware->after)) {
-                $middleware->after($request, $response);
-            }
-        }
+        $closure = $this->closure;
+
+        return $closure($this->_request, $this->_response);
     }
 
+    private function _call_controller_method()
+    {
+        $parts = explode('@', $this->closure);
+        $namespace = $this->namespace;
+        $controller = $namespace . $parts[0];
+        $method = $parts[1];
+        $controller_instance = new $controller($this->_request, $this->_response);
+
+        return $controller_instance->$method();
+    }
 }

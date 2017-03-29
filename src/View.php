@@ -32,11 +32,13 @@ class View
         $path = $view->find_template($template);
 
         if ($path) {
-            add_filter('template_include', function ($template) use ($path, $data) {
-                $template = $path;
+            if (function_exists('add_filter')) {
+                add_filter('template_include', function ($template) use ($path, $data) {
+                    $template = $path;
 
-                return $template;
-            });
+                    return $template;
+                });
+            }
         }
     }
 

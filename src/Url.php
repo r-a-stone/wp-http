@@ -3,26 +3,19 @@ namespace Webcode\WP\Http;
 
 class Url
 {
-    public function __construct()
+    public static function name($route_name)
     {
-    }
-
-    public static function get_instance()
-    {
-        static $instance = NULL;
-        if (is_null($instance)) {
-            $instance = new static();
-        }
-
-        return $instance;
-    }
-
-    public static function name($route_name, $method = 'GET')
-    {
+        $method = 'GET';
         $collection = RouteCollection::get_instance();
-        $route = $collection->get_by_name($method . '.' . $route_name);
-        if ($route) {
-            return $route->path();
+        if(is_array($route_name)) {
+            $method = $route_name[0];
+            $route_name = $route_name[1];
+        }
+        $routes = $collection->routes[$method];
+        foreach ($routes as $path => $route) {
+            if ($route->name === $route_name) {
+                return $path;
+            }
         }
     }
 }

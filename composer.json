@@ -1,10 +1,7 @@
 {
     "name": "rastone/wp-http",
-    "description": "RESTful routing in WordPress",
+    "description": "Easy RESTful routing in WordPress inspired by Laravel.",
     "type": "library",
-    "require": {
-        "symfony/http-foundation": "^3.2"
-    },
     "license": "GPL",
     "authors": [
         {
@@ -12,6 +9,9 @@
             "email": "rastone@webcode.io"
         }
     ],
+    "require": {
+        "symfony/http-foundation": "^3.2"
+    },
     "autoload": {
         "psr-4": {
             "Webcode\\WP\\Http\\": "src/"
