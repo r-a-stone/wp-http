@@ -6,7 +6,7 @@ Easy RESTful routing in WordPress inspired by Laravel.
 * Route Parameters
 * Closure and Controller support
 
-###routes/web.routes.php
+### routes/web.routes.php
 ```php
 use Webcode\WP\Http\RouteService as Route;
 
@@ -15,7 +15,7 @@ Route::get('/', function () {
 })->name('home');
 ```
 
-###TestController.php
+### TestController.php
 ```php
 namespace Webcode\WP\Http\Controllers;
 
@@ -32,7 +32,7 @@ class TestController extends Controller
 }
 ```
 
-###routes/api.routes.php
+### routes/api.routes.php
 ```php
 use Webcode\WP\Http\RouteService as Route;
 use Webcode\WP\Http\Request;
@@ -47,7 +47,7 @@ Route::group(['name' => 'auth:', 'prefix' => 'auth'], function () {
 });
 ```
 
-###index.php
+### index.php
 ```php
 include "vendor/autoload.php";
 use Webcode\WP\Http\Exceptions\NotFoundHttpException;
