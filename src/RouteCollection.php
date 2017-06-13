@@ -1,7 +1,7 @@
 <?php
 namespace Webcode\WP\Http;
 
-use Exception;
+use Webcode\WP\Http\Exceptions\NotFoundHttpException;
 
 class RouteCollection
 {
@@ -38,7 +38,7 @@ class RouteCollection
             $route = $this::_match_route_complex($method, $uri);
         }
         if (!$route) {
-            throw new Exception('No match found');
+            throw new NotFoundHttpException('No match found');
         }
 
         return $route;
